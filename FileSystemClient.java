@@ -127,7 +127,7 @@ public class FileSystemClient extends Application
 								if(command.length == 3){
 									try {
 										socket = new Socket(command[1], Integer.parseInt(command[2]));
-										joined = true;
+										joined = false;
 
 										System.out.println("Server: Connection to the File Exchange Server is successful!");
 										FileSystemClientSession session = new FileSystemClientSession(consoleInput, socket);
