@@ -11,8 +11,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import javafx.application.Application;
+import javafx.application.Platform;
+import javafx.stage.Stage;
 
-public class FileSystemClient
+public class FileSystemClient extends Application
 {
 	public static final int TEXT = 0;
 	public static final int BINARY = 1;
@@ -28,6 +31,9 @@ public class FileSystemClient
 	public static final String CLIENT_FILES_DIRECTORY = "client_files";
 	public static Boolean joined = false;
 
+	@Override
+	public void start(Stage stage) {
+	}
 
 	public static void errorMessage(int error){
 		switch(error){
@@ -76,6 +82,9 @@ public class FileSystemClient
 
 
 	public static void main(String[] args) {
+		// important: do not close JavaFX after exit
+		Platform.setImplicitExit(false);
+		
 		System.out.println("You have opened the file and message system application. Here are the commands:");
 					System.out.println("Description Input                          | Syntax Sample                 | Input Script\n" +
 									"\n" +
@@ -122,11 +131,7 @@ public class FileSystemClient
 
 										System.out.println("Server: Connection to the File Exchange Server is successful!");
 										FileSystemClientSession session = new FileSystemClientSession(consoleInput, socket);
-										try {
-											session.join();
-										} catch(InterruptedException e) {
-											// ok
-										}
+										session.run();
 
 										// after end of session
 										joined = false;

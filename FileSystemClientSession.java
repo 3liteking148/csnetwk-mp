@@ -70,14 +70,16 @@ public class FileSystemClientSession {
                 } else {
                     registered = true;
                     messageClient.set(new MessageClient(currentUsername, socket.getInetAddress().getHostName(), socket.getPort() + 1));
+                    messageClient.get().startGUI();
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            // die
+            return;
         }
     });
 
-    Thread userInput = new Thread(() -> {
+    public void run() {
         String commandInput = "";
 
         do{
@@ -119,7 +121,6 @@ public class FileSystemClientSession {
                         break;
                     case "/leave":
                         registered = false;
-                        destroy();
                         break;
                     case "/dir":
                         if(registered){
@@ -208,8 +209,15 @@ public class FileSystemClientSession {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        } while(commandInput != "/leave");
-    });
+        } while(!commandInput.equals("/leave") && serverListener.isAlive());
+
+        // leave
+        try {
+            destroy();
+        } catch(IOException e) {
+            e.printStackTrace();
+        }
+    }
 
 
     public FileSystemClientSession(BufferedReader consoleInput, Socket socket) throws IOException {
@@ -220,23 +228,15 @@ public class FileSystemClientSession {
         output = new DataOutputStream(socket.getOutputStream());
 
         serverListener.start();
-        userInput.start();
     }
 
     private void destroy() throws IOException {
-        // exit
         serverListener.interrupt();
-        userInput.interrupt();
         if(messageClient.get() != null) {
             messageClient.get().destroy();
         }
 
         // bye
         socket.close();
-    }
-
-    public void join() throws InterruptedException {
-        serverListener.join();
-        userInput.join();
     }
 }

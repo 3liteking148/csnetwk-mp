@@ -22,6 +22,8 @@ public class MessageClient extends Application
 	private GUIController controller = null;
 	private BlockingQueue<byte[]> sendQueue = new LinkedBlockingQueue<>();
 	private Thread inputThread, outputThread;
+	private Stage stage;
+
 	@Override
 	public void start(Stage stage) throws Exception {
 		stage.setTitle(username);
@@ -39,9 +41,10 @@ public class MessageClient extends Application
 	}
 
 	public void startGUI() {
-		Platform.startup(() -> {
+		Platform.runLater(() -> {
 			try {
-				start(new Stage());
+				stage = new Stage();
+				start(stage);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -96,7 +99,7 @@ public class MessageClient extends Application
 						} catch (IOException e) {
 							throw new RuntimeException(e);
 						} catch (InterruptedException e) {
-							throw new RuntimeException(e);
+							//throw new RuntimeException(e);
 						}
 					}
 				}
@@ -122,9 +125,8 @@ public class MessageClient extends Application
 
 		Platform.runLater(() -> {
 			try {
-				stop();
+				stage.close();
 			} catch (Exception e) {
-				e.printStackTrace();
 			}
 		});
 	}
