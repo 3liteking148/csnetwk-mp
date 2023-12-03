@@ -132,6 +132,7 @@ public class FileSystemClient
 
 
 									} catch (IOException e) {
+										joined = false;
 										errorMessage(ERROR_JOIN_FAIL);
 									}
 								}
