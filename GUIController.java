@@ -39,11 +39,11 @@ public class GUIController {
             int curIdx = messagesTab.getSelectionModel().getSelectedIndex();
             Tab currentTab = messagesTab.getTabs().get(curIdx);
 
-            Message message = new Message(((ExtraInfo)currentTab.getUserData()).username, textInput.getText());
+            String roomname = ((ExtraInfo)currentTab.getUserData()).roomname;
+            Message message = new Message(roomname, currentUser, textInput.getText());
             try {
                 messageQueue.add(message.toByteArray());
-
-                addSelfMessage(message);
+                addMessage(message);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -66,10 +66,10 @@ public class GUIController {
         return javaFxThread;
     }
     private class ExtraInfo {
-        public String username;
+        public String roomname;
 
-        public ExtraInfo(String username) {
-            this.username = username;
+        public ExtraInfo(String roomname) {
+            this.roomname = roomname;
         }
     }
 
@@ -89,29 +89,23 @@ public class GUIController {
         return newTab;
     }
 
-    private Tab getUserTab(String username) {
+    private Tab getUserTab(String roomname) {
         // find the tab with the username
         Optional<Tab> userTab = messagesTab.getTabs()
                 .stream()
-                .filter(t -> ((ExtraInfo)t.getUserData()).username.equals(username))
+                .filter(t -> ((ExtraInfo)t.getUserData()).roomname.equals(roomname))
                 .findFirst();
 
         if(userTab.isEmpty()) {
-            userTab = Optional.of(addTab(username));
+            userTab = Optional.of(addTab(roomname));
         }
 
         return userTab.get();
     }
     public void addMessage(Message message) {
-        Tab userTab = getUserTab(message.username());
+        Tab userTab = getUserTab(message.roomname());
         Text text = (Text) userTab.getContent();
         text.setText(text.getText() + "\n" + message.username() + ": " + message.content());
-    }
-
-    public void addSelfMessage(Message message) {
-        Tab userTab = getUserTab(message.username());
-        Text text = (Text) userTab.getContent();
-        text.setText(text.getText() + "\n" + currentUser + ": " + message.content());
     }
 
 }

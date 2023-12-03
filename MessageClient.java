@@ -18,12 +18,14 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 public class MessageClient extends Application
 {
-	private static String username;
-	private static GUIController controller = null;
-	private static BlockingQueue<byte[]> sendQueue = new LinkedBlockingQueue<>();
-
+	private String username;
+	private GUIController controller = null;
+	private BlockingQueue<byte[]> sendQueue = new LinkedBlockingQueue<>();
+	private Thread inputThread, outputThread;
 	@Override
 	public void start(Stage stage) throws Exception {
+		stage.setTitle(username);
+
 		this.controller = new GUIController(sendQueue, username);
 
 		FXMLLoader rootLoader = new FXMLLoader(getClass().getResource("./Messaging.fxml"));
@@ -33,31 +35,37 @@ public class MessageClient extends Application
 		stage.setScene(new Scene(root));
 		stage.show();
 
-		controller.addMessage(new Message("", "Use this to chat globally"));
+		controller.addMessage(new Message(Message.GLOBAL_ROOM, "System", "Use this to chat globally"));
 	}
 
+	public void startGUI() {
+		Platform.startup(() -> {
+			try {
+				start(new Stage());
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		});
+	}
 
-	public static void main(String[] args)
+	public MessageClient(String username, String host, int port)
 	{
-		username = args[0];
-
-
+		this.username = username;
 
 		try
 		{
-			System.out.println("0.0.1");
-			Socket socket = new Socket("127.0.0.1", 5678);
+			Socket socket = new Socket(host, port);
 			DataInputStream inputStream = new DataInputStream(socket.getInputStream());
 			DataOutputStream outputStream = new DataOutputStream(socket.getOutputStream());
 
 			// send greetings
 			System.out.println("Sending greetings");
-			Message initial = new Message(args[0], "hello");
+			Message initial = new Message(username, username, "hello");
 			initial.toDataOutputStream(outputStream);
 
 			System.out.println("OK");
 
-			Thread inputThread = new Thread() {
+			inputThread = new Thread() {
 				public void run() {
 
 					while(socket.isConnected()) {
@@ -79,7 +87,7 @@ public class MessageClient extends Application
 				}
 			};
 
-			Thread outputThread = new Thread() {
+			outputThread = new Thread() {
 				public void run() {
 					Scanner scanner = new Scanner(System.in);
 					while(socket.isConnected()) {
@@ -96,21 +104,29 @@ public class MessageClient extends Application
 
 			inputThread.start();
 			outputThread.start();
-
-			// run JavaFX
-			launch(args);
-
-			inputThread.join();
-			outputThread.join();
 		}
 		catch (Exception e)
 		{
 			e.printStackTrace();
 		}
-		finally
-		{
-			System.out.println("Client: Connection is terminated");
+	}
+
+	public void destroy() {
+		if(inputThread != null) {
+			inputThread.interrupt();
 		}
+
+		if(outputThread != null) {
+			outputThread.interrupt();
+		}
+
+		Platform.runLater(() -> {
+			try {
+				stop();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		});
 	}
 
 

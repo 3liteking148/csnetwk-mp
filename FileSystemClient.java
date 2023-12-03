@@ -6,102 +6,99 @@
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.net.Socket;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 
 public class FileSystemClient
 {
-	public static void errorMessage(String error){
+	public static final int TEXT = 0;
+	public static final int BINARY = 1;
+	public static final int ERROR_JOIN_FAIL = 0;
+	public static final int ERROR_JOIN_ALREADY = 1;
+	public static final int ERROR_NO_SERVER = 2;
+	public static final int ERROR_NOT_REGISTERED = 3;
+	public static final int ERROR_NO_COMMAND = 4;
+	public static final int ERROR_INVALID_PARAMS = 5;
+	public static final int ERROR_NO_FILE_CLIENT = 6;
+	public static final int ERROR_NO_FILE_SERVER = 7;
+	public static final int ERROR_ALREADY_REGISTERED = 8;
+	public static final String CLIENT_FILES_DIRECTORY = "client_files";
+	public static Boolean joined = false;
+
+
+	public static void errorMessage(int error){
 		switch(error){
-			case "join_fail":
+			case ERROR_JOIN_FAIL:
 				System.out.println("Error: Connection to the Server has failed! Please check IP Address and Port Number.");
-			case "no_server":
+				break;
+			case ERROR_JOIN_ALREADY:
+				System.out.println("Error: Already joined.");
+				break;
+			case ERROR_NO_SERVER:
 				System.out.println("Error: No connection to existing server to execute command with.");
-			case "not_registered":
+				break;
+			case ERROR_NOT_REGISTERED:
 				System.out.println("Error: No alias has been registered with server.");
+				break;
+			case ERROR_NO_COMMAND:
+				System.out.println("Error: Command not found.");
+				break;
+			case ERROR_INVALID_PARAMS:
+				System.out.println("Error: Command parameters do not match or is not allowed.");
+				break;
+			case ERROR_NO_FILE_CLIENT:
+				System.out.println("Error: File not found.");
+				break;
+			case ERROR_NO_FILE_SERVER:
+				System.out.println("Error: File not found in server.");
+				break;
+			case ERROR_ALREADY_REGISTERED:
+				System.out.println("Error: Already registered!");
+				break;
+
 		}
 	}
 
+	private static void createClientFilesDirectory() {
+		Path clientFilesPath = Paths.get(CLIENT_FILES_DIRECTORY);
+
+		if (!Files.exists(clientFilesPath)) {
+			try {
+				Files.createDirectories(clientFilesPath);
+			} catch (IOException e) {
+				System.err.println("Error creating 'client_files' directory: " + e.getMessage());
+			}
+		}
+	}
+
+
 	public static void main(String[] args) {
-		try {
-			BufferedReader consoleInput = new BufferedReader(new InputStreamReader(System.in));
-			BufferedReader input = null;
-			PrintWriter output = null;
+		System.out.println("You have opened the file and message system application. Here are the commands:");
+					System.out.println("Description Input                          | Syntax Sample                 | Input Script\n" +
+									"\n" +
+									"Connect to the server application          | /join <server_ip_add> <port>  | /join 192.168.1.1 12345\n" +
+									"Disconnect to the server application       | /leave                        | /leave\n" +
+									"Register a unique handle or alias          | /register <handle>            | /register User1\n" +
+									"Send file to server /store <filename>      | /store <filename>             | /store Hello.txt\n" +
+									"Request directory file list from a server  | /dir                          | /dir\n" +
+									"Fetch a file from a server /get <filename> | /get <filename>               | /get Hello.txt\n" +
+									"Request command help to output all Input   | /?                            | /?\n");
+		while(true){
 
-			Boolean joined = false;
-			Boolean registered = false;
+			try {
 
-			// Rest of the client code
-			String text;
-			do {
-				System.out.print("Enter a command: ");
-				text = consoleInput.readLine();
-				String[] command = text.split(" ");
+				BufferedReader consoleInput = new BufferedReader(new InputStreamReader(System.in));
+				Socket socket = null;
 
-				// JOIN FIRST
-				switch(command[0]) {
-					case "/?":
-						System.out.println("Description Input                          | Syntax Sample                 | Input Script\n" +
-								"\n" +
-								"Connect to the server application          | /join <server_ip_add> <port>  | /join 192.168.1.1 12345\n" +
-								"Disconnect to the server application       | /leave                        | /leave\n" +
-								"Register a unique handle or alias          | /register <handle>            | /register User1\n" +
-								"Send file to server /store <filename>      | /store <filename>             | /store Hello.txt\n" +
-								"Request directory file list from a server  | /dir                          | /dir\n" +
-								"Fetch a file from a server /get <filename> | /get <filename>               | /get Hello.txt\n" +
-								"Request command help to output all Input   | /?                            | /?\n");
-						break;
-					case "/join":
-						if (!joined) {
-							try {
-								Socket socket = new Socket(command[1], Integer.parseInt(command[2]));
 
-								input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-								output = new PrintWriter(socket.getOutputStream(), true);
-								joined = true;
+				createClientFilesDirectory();
 
-							} catch (IOException e) {
-								errorMessage("join_fail");
-							}
-						} else {
-							errorMessage("already_joined");
-						}
-						break;
-					case "/register":
-						break;
-					case "/leave":
-						break;
-					case "/dir":
-						break;
-					case "/get":
-						break;
-					case "/store":
-						break;
-					default:
-						System.out.println("Error: Command not found.");
-						break;
-				}
-
-			} while (!joined);
-
-			Thread serverListener = new Thread(() -> {
-				try {
-					String message;
-					while ((message = input.readLine()) != null) {
-						System.out.println("Server: " + message);
-					}
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			});
-			serverListener.start();
-
-			Thread userInput = new Thread(() -> {
-				String commandInput;
-				try {
-					System.out.print("Enter a command: ");
-					commandInput = consoleInput.readLine();
-					String[] command = commandInput.split(" ");
+				while (!joined) {
+					String text = consoleInput.readLine();
+					String[] command = text.split(" ");
 
 					// JOIN FIRST
 					switch(command[0]) {
@@ -117,31 +114,51 @@ public class FileSystemClient
 									"Request command help to output all Input   | /?                            | /?\n");
 							break;
 						case "/join":
+							if (!joined) {
+								if(command.length == 3){
+									try {
+										socket = new Socket(command[1], Integer.parseInt(command[2]));
+										joined = true;
 
+										System.out.println("Server: Connection to the File Exchange Server is successful!");
+										FileSystemClientSession session = new FileSystemClientSession(consoleInput, socket);
+										try {
+											session.join();
+										} catch(InterruptedException e) {
+											// ok
+										}
+
+										// after end of session
+										joined = false;
+
+									} catch (IOException e) {
+										errorMessage(ERROR_JOIN_FAIL);
+									}
+								}
+								else{
+									errorMessage(ERROR_INVALID_PARAMS);
+								}
+							} else {
+								errorMessage(ERROR_JOIN_ALREADY);
+							}
 							break;
 						case "/register":
-							output.println(command);
-							break;
 						case "/leave":
-							break;
 						case "/dir":
-							break;
 						case "/get":
-							break;
 						case "/store":
+							errorMessage(ERROR_NO_SERVER);
 							break;
 						default:
-							System.out.println("Error: Command not found.");
+							errorMessage(ERROR_NO_SERVER);
 							break;
 					}
-				} catch (IOException e) {
-					e.printStackTrace();
 				}
-			});
-			userInput.start();
-		} catch (IOException e) {
-			e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 	}
+
 
 }

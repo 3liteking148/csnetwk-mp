@@ -53,13 +53,13 @@ public class MessageServerThread {
                             System.out.println(username + ": received " + message.content());
 
                             // send to client
-                            if(!message.username().equals("")) {
+                            if(!message.roomname().equals("")) {
                                 // unicast
-                                byte[] toSend = (new Message(username, message.content())).toByteArray();
-                                mapper.get(message.username()).write(toSend);
+                                byte[] toSend = (new Message(message.username(), message.username(), message.content())).toByteArray();
+                                mapper.get(message.roomname()).write(toSend);
                             } else {
                                 // multicast
-                                byte[] toSend = (new Message("", username + ": " + message.content())).toByteArray();
+                                byte[] toSend = message.toByteArray();
                                 for(MessageServerThread m : mapper.values() ) {
                                     if(!m.getUsername().equals(username)) { // except self
                                         m.write(toSend);
