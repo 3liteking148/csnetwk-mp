@@ -84,7 +84,7 @@ public class FileSystemClient extends Application
 	public static void main(String[] args) {
 		// important: do not close JavaFX after exit
 		Platform.setImplicitExit(false);
-		
+
 		System.out.println("You have opened the file and message system application. Here are the commands:");
 					System.out.println("Description Input                          | Syntax Sample                 | Input Script\n" +
 									"\n" +
@@ -134,9 +134,10 @@ public class FileSystemClient extends Application
 										session.run();
 
 										// after end of session
-										joined = false;
+
 
 									} catch (IOException e) {
+										joined = false;
 										errorMessage(ERROR_JOIN_FAIL);
 									}
 								}
