@@ -75,7 +75,7 @@ public class FileSystemClientSession {
             }
         } catch (IOException e) {
             // die
-            System.out.println("Closed");
+            FileSystemClient.errorMessage(FileSystemClient.ERROR_LOST_CONNECTION);
             return;
         }
     });
@@ -212,10 +212,10 @@ public class FileSystemClientSession {
                         break;
                 }
             } catch (IOException e) {
-                FileSystemClient.errorMessage(FileSystemClient.ERROR_LOST_CONNECTION);
+                //FileSystemClient.errorMessage(FileSystemClient.ERROR_LOST_CONNECTION);
                 break;
             }
-        } while(!commandInput.equals("/leave"));
+        } while(!commandInput.equals("/leave") && socket.isConnected());
 
         // leave
         destroy();
