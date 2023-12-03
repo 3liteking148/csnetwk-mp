@@ -75,6 +75,7 @@ public class FileSystemClientSession {
             }
         } catch (IOException e) {
             // die
+            System.out.println("Closed");
             return;
         }
     });
@@ -86,6 +87,10 @@ public class FileSystemClientSession {
             try {
                 commandInput = consoleInput.readLine();
                 String[] command = commandInput.split(" ");
+                
+                // test connection
+                output.writeUTF("/connectivitytest");
+                output.flush();
 
                 // AFTER JOINING
                 switch(command[0]) {
@@ -207,16 +212,13 @@ public class FileSystemClientSession {
                         break;
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+                FileSystemClient.errorMessage(FileSystemClient.ERROR_LOST_CONNECTION);
+                break;
             }
-        } while(!commandInput.equals("/leave") && serverListener.isAlive());
+        } while(!commandInput.equals("/leave"));
 
         // leave
-        try {
-            destroy();
-        } catch(IOException e) {
-            e.printStackTrace();
-        }
+        destroy();
     }
 
 
@@ -230,13 +232,17 @@ public class FileSystemClientSession {
         serverListener.start();
     }
 
-    private void destroy() throws IOException {
+    private void destroy() {
         serverListener.interrupt();
         if(messageClient.get() != null) {
             messageClient.get().destroy();
         }
 
         // bye
-        socket.close();
+        try {
+            socket.close();
+        } catch(IOException e) {
+            e.printStackTrace();
+        }
     }
 }

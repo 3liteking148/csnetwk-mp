@@ -28,6 +28,7 @@ public class FileSystemClient extends Application
 	public static final int ERROR_NO_FILE_CLIENT = 6;
 	public static final int ERROR_NO_FILE_SERVER = 7;
 	public static final int ERROR_ALREADY_REGISTERED = 8;
+	public static final int ERROR_LOST_CONNECTION = 9;
 	public static final String CLIENT_FILES_DIRECTORY = "client_files";
 	public static Boolean joined = false;
 
@@ -63,6 +64,9 @@ public class FileSystemClient extends Application
 				break;
 			case ERROR_ALREADY_REGISTERED:
 				System.out.println("Error: Already registered!");
+				break;
+			case ERROR_LOST_CONNECTION:
+				System.out.println("Error: Lost connection to the server.");
 				break;
 
 		}

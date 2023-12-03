@@ -51,13 +51,14 @@ public class MessageClient extends Application
 		});
 	}
 
+	private Socket socket;
 	public MessageClient(String username, String host, int port)
 	{
 		this.username = username;
 
 		try
 		{
-			Socket socket = new Socket(host, port);
+			socket = new Socket(host, port);
 			DataInputStream inputStream = new DataInputStream(socket.getInputStream());
 			DataOutputStream outputStream = new DataOutputStream(socket.getOutputStream());
 
@@ -84,7 +85,7 @@ public class MessageClient extends Application
 								}
 							});
 						} catch (IOException e) {
-							throw new RuntimeException(e);
+							destroy();
 						}
 					}
 				}
@@ -92,14 +93,13 @@ public class MessageClient extends Application
 
 			outputThread = new Thread() {
 				public void run() {
-					Scanner scanner = new Scanner(System.in);
 					while(socket.isConnected()) {
 						try {
 							outputStream.write(sendQueue.take());
 						} catch (IOException e) {
-							throw new RuntimeException(e);
+							destroy();
 						} catch (InterruptedException e) {
-							//throw new RuntimeException(e);
+							
 						}
 					}
 				}
@@ -129,6 +129,14 @@ public class MessageClient extends Application
 			} catch (Exception e) {
 			}
 		});
+
+		if(socket != null) {
+			try {
+				socket.close();
+			} catch (IOException e) {
+				
+			}
+		}
 	}
 
 

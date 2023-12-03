@@ -25,6 +25,8 @@ public class MessageServerThread {
     private MessageServerThread getCurrentUser() {
         return this;
     }
+
+    private Thread inputThread, outputThread;
     public MessageServerThread(Socket socket, ConcurrentHashMap<String, MessageServerThread> mapper) throws IOException {
         this.socket = socket;
         this.mapper = mapper;
@@ -32,50 +34,49 @@ public class MessageServerThread {
         DataInputStream inputStream = new DataInputStream(socket.getInputStream());
         DataOutputStream outputStream = new DataOutputStream(socket.getOutputStream());
 
-        Thread inputThread = new Thread() {
+        inputThread = new Thread() {
             public void run() {
-
                 try {
                     System.out.println("Waiting for client's configuration");
                     Message initial = Message.fromDataInputStream(inputStream);
 
                     // should be safe since it's a one-time occurance
                     username = initial.username();
-
-                    // xx
-                    System.out.println("Username: " + username);
                     mapper.put(username, getCurrentUser());
 
-
                     while(socket.isConnected()) {
-                        try {
-                            Message message = Message.fromDataInputStream(inputStream);
-                            System.out.println(username + ": received " + message.content());
+                        Message message = Message.fromDataInputStream(inputStream);
+                        System.out.println(username + ": received " + message.content());
 
-                            // send to client
-                            if(!message.roomname().equals("")) {
-                                // unicast
+                        // send to client
+                        if(!message.roomname().equals("")) {
+                            // unicast
+                            MessageServerThread target = mapper.get(message.roomname());
+                            if(target != null) {
                                 byte[] toSend = (new Message(message.username(), message.username(), message.content())).toByteArray();
-                                mapper.get(message.roomname()).write(toSend);
+                                target.write(toSend);
                             } else {
-                                // multicast
-                                byte[] toSend = message.toByteArray();
-                                for(MessageServerThread m : mapper.values() ) {
-                                    if(!m.getUsername().equals(username)) { // except self
-                                        m.write(toSend);
-                                    }
-                                }
+                                byte[] toSend = (new Message(message.roomname(), "System", "Client is no longer connected to server.")).toByteArray();
+                                write(toSend);
                             }
 
-                        } catch (IOException e) {
+                        } else {
+                            // multicast
+                            byte[] toSend = message.toByteArray();
+                            for(MessageServerThread m : mapper.values() ) {
+                                if(!m.getUsername().equals(username)) { // except self
+                                    m.write(toSend);
+                                }
+                            }
                         }
-                    }
+                }
                 } catch (IOException e) {
+                    destroy();
                 }
             }
         };
 
-        Thread outputThread = new Thread() {
+        outputThread = new Thread() {
             public void run() {
                 while(socket.isConnected()) {
                     try {
@@ -96,5 +97,8 @@ public class MessageServerThread {
         return this.username;
     }
 
-
+    public void destroy() {
+        inputThread.interrupt();
+        outputThread.interrupt();
+    }
 }

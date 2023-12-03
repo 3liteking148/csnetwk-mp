@@ -144,6 +144,8 @@ public class FileSystemServer
 				do {
 					command = input.readUTF().split(" ");
 					switch(command[0]){
+						case "/connectivitytest":
+							break;
 						case "/register":
 							handleRegistration(command[1]);
 							break;
