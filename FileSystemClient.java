@@ -124,9 +124,8 @@ public class FileSystemClient
 										FileSystemClientSession session = new FileSystemClientSession(consoleInput, socket);
 										try {
 											session.join();
-											joined = false;
 										} catch(InterruptedException e) {
-											// ok
+											joined = false;
 										}
 
 										// after end of session
