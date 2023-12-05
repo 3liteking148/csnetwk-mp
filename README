@@ -6,3 +6,5 @@ To run this code, you need the javafx folder and the compile.bat file in the sam
 To compile the program with javafx, you need to run the compile.bat in the folder of the program from your command line.
 To run the server program, you need to have the server.bat file and run it from your command line.
 To run the client program, you need to have the client.bat file and run it from your command line.
+
+To join the server, use the parameters 0.0.0.0 for the IP

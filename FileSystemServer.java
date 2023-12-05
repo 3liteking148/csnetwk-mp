@@ -40,7 +40,6 @@ public class FileSystemServer
 				try {
 					client.sendMessage(message);
 				} catch (Exception e) {
-					e.printStackTrace();
 				}
 			}
 		}
@@ -76,7 +75,7 @@ public class FileSystemServer
 				executor.execute(clientHandler);
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
+			// e.printStackTrace();
 		}
 		finally
 		{
@@ -126,7 +125,7 @@ public class FileSystemServer
 			try {
 				output.writeInt(REGISTER);
 			} catch (IOException e) {
-				e.printStackTrace();
+				// e.printStackTrace();
 			}
 		}
 
@@ -169,7 +168,7 @@ public class FileSystemServer
 				handleLeave();
 				clientSocket.close();
 			} catch (IOException e) {
-				e.printStackTrace();
+				// e.printStackTrace();
 				handleLeave();
 			}
 		}
@@ -254,7 +253,6 @@ public class FileSystemServer
 				sendMessage(filesList);
 			} catch (IOException e) {
 				// Handle IOException appropriately (e.g., log or print the exception)
-				e.printStackTrace();
 			}
 		}
 
