@@ -98,6 +98,12 @@ public class MessageServerThread {
     }
 
     public void destroy() {
-        
+        if(socket != null) {
+			try {
+				socket.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
     }
 }
