@@ -280,6 +280,8 @@ public class FileSystemServer
 				clientMap.remove(this);
 				sendToAllExceptCurrent("Client left: " + clientNickname, this);
 				System.out.println("Client left: " + clientNickname);
+			} else {
+				System.out.println("Unregistered user left.");
 			}
 		}
 	}

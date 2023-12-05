@@ -1,7 +1,7 @@
 LORD, PINPIN
 HARVEY, CHUA
 
-To run this code, you need the javafx folder and the compile.bat file in the same directory as the corresponding java files for both server and client.
+To run this code, you need the javafx folder and the compile.bat file in the same directory as the corresponding java files for both server and client. We also included the font Roboto Mono for the UI.
 
 To compile the program with javafx, you need to run the compile.bat in the folder of the program from your command line.
 To run the server program, you need to have the server.bat file and run it from your command line.

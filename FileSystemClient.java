@@ -34,6 +34,7 @@ public class FileSystemClient extends Application
 	public static final int ERROR_LOST_CONNECTION = 9;
 	public static final String CLIENT_FILES_DIRECTORY = "client_files";
 	public static Boolean joined = false;
+	public static FileSystemClientSession clientSession = null;
 
 	public static GUIControllerReal controller;
 	@Override
@@ -47,13 +48,15 @@ public class FileSystemClient extends Application
 		stage.setScene(new Scene(root));
 		stage.show();
 
+		stage.setOnCloseRequest( event -> {if(clientSession != null){clientSession.destroy();}} );
+
 		// start main app
 		System.out.println("3");
 		Thread clientThread = new Thread(() -> {
 			initialize_client();
 		});
 		clientThread.start();
-		
+
 	}
 
 	private static BufferedReader consoleInput = new BufferedReader(new InputStreamReader(System.in));
@@ -103,7 +106,7 @@ public class FileSystemClient extends Application
 				println("Error: Already registered!");
 				break;
 			case ERROR_LOST_CONNECTION:
-				println("Error: Lost connection to the server.");
+				println("Disconnected from server.");
 				break;
 
 		}
@@ -172,8 +175,9 @@ public class FileSystemClient extends Application
 										joined = false;
 
 										println("Server: Connection to the File Exchange Server is successful!");
-										FileSystemClientSession session = new FileSystemClientSession(/* consoleInput */ null, socket);
-										session.run();
+										clientSession = new FileSystemClientSession(/* consoleInput */ null, socket);
+
+										clientSession.run();
 
 										// after end of session
 

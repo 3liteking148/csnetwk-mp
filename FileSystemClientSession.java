@@ -87,7 +87,7 @@ public class FileSystemClientSession {
             try {
                 commandInput = FileSystemClient.readLine();
                 String[] command = commandInput.split(" ");
-                
+
                 // test connection
                 output.writeUTF("/connectivitytest");
                 output.flush();
@@ -231,7 +231,7 @@ public class FileSystemClientSession {
         serverListener.start();
     }
 
-    private void destroy() {
+    public void destroy() {
         if(messageClient.get() != null) {
             messageClient.get().destroy();
         }
