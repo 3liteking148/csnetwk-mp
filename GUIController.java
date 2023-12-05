@@ -44,6 +44,9 @@ public class GUIController {
             try {
                 messageQueue.add(message.toByteArray());
                 addMessage(message);
+
+                // blank
+                textInput.setText("");
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
