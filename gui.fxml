@@ -88,7 +88,7 @@
             <TextField fx:id="input" layoutX="14.0" layoutY="14.0" prefWidth="617.0" />
             <ScrollPane layoutX="14.0" layoutY="40.0" prefHeight="324.0" prefWidth="617.0">
               <content>
-                <Text fx:id="output" layoutX="14.0" layoutY="19.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Text" />
+                <Text fx:id="output" layoutX="14.0" layoutY="19.0" strokeType="OUTSIDE" strokeWidth="0.0" text="" />
               </content>
             </ScrollPane>
       </children>
