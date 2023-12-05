@@ -9,7 +9,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 public class MessageServerThread {
     private Socket socket;
-    private ConcurrentHashMap<String, MessageServerThread> mapper;
+    private ConcurrentHashMap<String, MessageServerThread> mapper = new ConcurrentHashMap<>();
     private String username;
 
     // threadsafe queue
@@ -27,9 +27,8 @@ public class MessageServerThread {
     }
 
     private Thread inputThread, outputThread;
-    public MessageServerThread(Socket socket, ConcurrentHashMap<String, MessageServerThread> mapper) throws IOException {
+    public MessageServerThread(Socket socket) throws IOException {
         this.socket = socket;
-        this.mapper = mapper;
 
         DataInputStream inputStream = new DataInputStream(socket.getInputStream());
         DataOutputStream outputStream = new DataOutputStream(socket.getOutputStream());
