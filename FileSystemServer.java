@@ -304,7 +304,7 @@ public class FileSystemServer
 				if (clientNickname != null) {
 					clientMap.remove(this);
 					sendToAllExceptCurrent("Client left: " + clientNickname, this);
-					System.out.println("Client left: " + clientNickname);
+					System.out.println("User left: " + clientNickname);
 				} else {
 					System.out.println("Unregistered user left.");
 				}
