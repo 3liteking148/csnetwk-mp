@@ -16,6 +16,9 @@ public class GUIControllerReal {
     @FXML
     private TextField input;
 
+    @FXML
+    private ScrollPane scroll;
+
     private AtomicReference<String> cmd = new AtomicReference<>("");
 
     public void initialize() {
@@ -54,6 +57,7 @@ public class GUIControllerReal {
         Platform.runLater(() -> {
             System.out.println(text);
             output.setText(output.getText() + text + "\n");
+            scroll.setVvalue(1.0);
         });
     }
 }
