@@ -83,6 +83,7 @@ public class MessageServerThread {
                         outputStream.write(toSend);
 
                     } catch (Exception e) {
+                        destroy();
                     }
                 }
             }
