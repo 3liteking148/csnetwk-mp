@@ -11,6 +11,7 @@ import java.io.DataOutputStream;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.ConcurrentHashMap;
@@ -47,12 +48,35 @@ public class FileSystemServer
 
 	public static void main(String[] args)
 	{
-		int nPort = Integer.parseInt(args[0]);
+
+		if (args.length < 2) {
+            System.out.println("Usage: java FileSystemServer <ip> <port>");
+            System.exit(1);
+        }
+
+		try {
+			Integer.parseInt(args[1]);
+		} catch (Exception e){
+			System.out.println("Error: port is not a Number.");
+            System.exit(1);
+		}
+
+
+
+		String nIP = args[0];
+
+		int nPort = Integer.parseInt(args[1]);
 		System.out.println("Server: Listening on port " + nPort + "...");
 		System.out.println();
 
 		// run message server
-		MessageServer messageServer = new MessageServer(nPort + 1);
+		try {
+			MessageServer messageServer = new MessageServer(InetAddress.getByName(nIP), nPort + 1);
+		} catch (Exception e) {
+			System.out.println("Error: IP address not recognized.");
+            System.exit(1);
+		}
+
 		System.out.println("Message Server: Listening on port " + nPort + 1 + "...");
 		System.out.println();
 
@@ -63,7 +87,7 @@ public class FileSystemServer
 
 		try
 		{
-			serverSocket = new ServerSocket(nPort);
+			serverSocket = new ServerSocket(nPort, 0, InetAddress.getByName(nIP));
 			System.out.println("Server started. Waiting for clients...");
 
 			while (true) {

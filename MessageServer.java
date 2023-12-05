@@ -4,7 +4,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class MessageServer
 {
-	public MessageServer(int port)
+	public MessageServer(InetAddress ip, int port)
 	{
 		Thread messageServerMainThread = new Thread() {
 			public void run() {
@@ -12,7 +12,7 @@ public class MessageServer
 				ConcurrentHashMap<String, MessageServerThread> mapper;
 
 				try {
-					serverSocket = new ServerSocket(port);
+					serverSocket = new ServerSocket(port, 0, ip);
 					mapper = new ConcurrentHashMap<>();
 
 					while(true) {
