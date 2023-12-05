@@ -71,9 +71,8 @@ public class MessageClient extends Application
 
 			inputThread = new Thread() {
 				public void run() {
-
-					while(socket.isConnected()) {
-						try {
+					try {
+						while(!socket.isClosed()) {
 							Message message = Message.fromDataInputStream(inputStream);
 							System.out.println(message.username() + ": " + message.content());
 
@@ -84,16 +83,16 @@ public class MessageClient extends Application
 									controller.addMessage(message);
 								}
 							});
-						} catch (IOException e) {
-							destroy();
 						}
+					} catch (IOException e) {
+							destroy();
 					}
 				}
 			};
 
 			outputThread = new Thread() {
 				public void run() {
-					while(socket.isConnected()) {
+					while(!socket.isClosed()) {
 						try {
 							outputStream.write(sendQueue.take());
 						} catch (IOException e) {
@@ -115,14 +114,6 @@ public class MessageClient extends Application
 	}
 
 	public void destroy() {
-		if(inputThread != null) {
-			inputThread.interrupt();
-		}
-
-		if(outputThread != null) {
-			outputThread.interrupt();
-		}
-
 		Platform.runLater(() -> {
 			try {
 				stage.close();
@@ -134,7 +125,7 @@ public class MessageClient extends Application
 			try {
 				socket.close();
 			} catch (IOException e) {
-				
+				e.printStackTrace();
 			}
 		}
 	}

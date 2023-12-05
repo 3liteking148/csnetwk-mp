@@ -38,7 +38,7 @@ public class FileSystemClientSession {
 
     private Thread serverListener = new Thread(() -> {
         try {
-            while (true) {
+            while (!socket.isClosed()) {
                 int type = input.readInt();
                 if (type == FileSystemServer.TEXT) {
                     String message = input.readUTF();
@@ -232,7 +232,6 @@ public class FileSystemClientSession {
     }
 
     private void destroy() {
-        serverListener.interrupt();
         if(messageClient.get() != null) {
             messageClient.get().destroy();
         }

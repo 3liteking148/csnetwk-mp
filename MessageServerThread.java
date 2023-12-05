@@ -16,7 +16,7 @@ public class MessageServerThread {
     private BlockingQueue<byte[]> sendQueue = new LinkedBlockingQueue<>();
 
     public void write(byte[] data) {
-        if(socket.isConnected()) {
+        if(!socket.isClosed()) {
             sendQueue.add(data.clone());
         }
     }
@@ -44,7 +44,7 @@ public class MessageServerThread {
                     username = initial.username();
                     mapper.put(username, getCurrentUser());
 
-                    while(socket.isConnected()) {
+                    while(!socket.isClosed()) {
                         Message message = Message.fromDataInputStream(inputStream);
                         System.out.println(username + ": received " + message.content());
 
@@ -78,7 +78,7 @@ public class MessageServerThread {
 
         outputThread = new Thread() {
             public void run() {
-                while(socket.isConnected()) {
+                while(!socket.isClosed()) {
                     try {
                         byte[] toSend = sendQueue.take();
                         outputStream.write(toSend);
@@ -98,7 +98,6 @@ public class MessageServerThread {
     }
 
     public void destroy() {
-        inputThread.interrupt();
-        outputThread.interrupt();
+        
     }
 }

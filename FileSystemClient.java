@@ -181,6 +181,10 @@ public class FileSystemClient extends Application
 									} catch (IOException e) {
 										joined = false;
 										errorMessage(ERROR_JOIN_FAIL);
+									} catch (Exception e) {
+										// invalid ports
+										joined = false;
+										errorMessage(ERROR_JOIN_FAIL);
 									}
 								}
 								else{
