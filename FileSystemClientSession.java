@@ -42,7 +42,7 @@ public class FileSystemClientSession {
                 int type = input.readInt();
                 if (type == FileSystemServer.TEXT) {
                     String message = input.readUTF();
-                    System.out.println(message);
+                    FileSystemClient.println(message);
                 } else if (type == FileSystemServer.BINARY) {
                     Path filePath = Paths.get("client_files", currentFile);
 
@@ -63,7 +63,7 @@ public class FileSystemClientSession {
                             System.out.print(e);
                         }
                     } else {
-                        System.out.println("File received from Server: " + currentFile);
+                        FileSystemClient.println("File received from Server: " + currentFile);
                         currentFile = "";
                     }
 
@@ -85,7 +85,7 @@ public class FileSystemClientSession {
 
         do{
             try {
-                commandInput = consoleInput.readLine();
+                commandInput = FileSystemClient.readLine();
                 String[] command = commandInput.split(" ");
                 
                 // test connection
@@ -96,7 +96,7 @@ public class FileSystemClientSession {
                 switch(command[0]) {
                     case "/?":
                         if(command.length == 1){
-                            System.out.println("Description Input                          | Syntax Sample                 | Input Script\n" +
+                            FileSystemClient.println("Description Input                          | Syntax Sample                 | Input Script\n" +
                                     "\n" +
                                     "Connect to the server application          | /join <server_ip_add> <port>  | /join 192.168.1.1 12345\n" +
                                     "Disconnect to the server application       | /leave                        | /leave\n" +
@@ -147,7 +147,7 @@ public class FileSystemClientSession {
                                     try {
                                         // Delete the file
                                         Files.delete(filePath);
-                                        System.out.println("File deleted successfully.");
+                                        FileSystemClient.println("File deleted successfully.");
                                     } catch (IOException e) {
                                         System.err.println("Failed to delete the file: " + e.getMessage());
                                     }
@@ -180,7 +180,6 @@ public class FileSystemClientSession {
                                         int bytesRead;
 
                                         while ((bytesRead = bufferedFileInputStream.read(buffer)) > 0) {
-                                            System.out.println(bytesRead);
                                             sendBlob(buffer, bytesRead);
                                         }
 
@@ -191,7 +190,7 @@ public class FileSystemClientSession {
                                         output.flush();
                                         fileInputStream.close();
                                         bufferedFileInputStream.close();
-                                        System.out.println("File uploaded successfully.");
+                                        FileSystemClient.println("File uploaded successfully.");
 
 
                                     } catch (IOException e) {
@@ -208,7 +207,7 @@ public class FileSystemClientSession {
                         }
                         break;
                     default:
-                        System.out.println("Error: Command not found.");
+                        FileSystemClient.println("Error: Command not found.");
                         break;
                 }
             } catch (IOException e) {
