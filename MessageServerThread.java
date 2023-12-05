@@ -9,7 +9,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 public class MessageServerThread {
     private Socket socket;
-    private ConcurrentHashMap<String, MessageServerThread> mapper = new ConcurrentHashMap<>();
+    private static ConcurrentHashMap<String, MessageServerThread> mapper = new ConcurrentHashMap<>();
     private String username;
 
     // threadsafe queue
