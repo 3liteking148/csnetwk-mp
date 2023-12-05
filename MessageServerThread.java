@@ -56,7 +56,7 @@ public class MessageServerThread {
                                 byte[] toSend = (new Message(message.username(), message.username(), message.content())).toByteArray();
                                 target.write(toSend);
                             } else {
-                                byte[] toSend = (new Message(message.roomname(), "System", "Client is no longer connected to server.")).toByteArray();
+                                byte[] toSend = (new Message(message.roomname(), "System", "User does not exist or is no longer connected to server.")).toByteArray();
                                 write(toSend);
                             }
 
