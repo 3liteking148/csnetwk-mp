@@ -276,12 +276,14 @@ public class FileSystemServer
 		}
 
 		private void handleLeave() {
-			if (clientNickname != null) {
-				clientMap.remove(this);
-				sendToAllExceptCurrent("Client left: " + clientNickname, this);
-				System.out.println("Client left: " + clientNickname);
-			} else {
-				System.out.println("Unregistered user left.");
+			synchronized(registrationMutex) {
+				if (clientNickname != null) {
+					clientMap.remove(this);
+					sendToAllExceptCurrent("Client left: " + clientNickname, this);
+					System.out.println("Client left: " + clientNickname);
+				} else {
+					System.out.println("Unregistered user left.");
+				}
 			}
 		}
 	}
