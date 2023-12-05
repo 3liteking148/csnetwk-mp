@@ -1,6 +1,5 @@
 import java.net.*;
 import java.io.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class MessageServer
 {
@@ -9,11 +8,9 @@ public class MessageServer
 		Thread messageServerMainThread = new Thread() {
 			public void run() {
 				ServerSocket serverSocket = null;
-				ConcurrentHashMap<String, MessageServerThread> mapper;
 
 				try {
 					serverSocket = new ServerSocket(port, 0, ip);
-					mapper = new ConcurrentHashMap<>();
 
 					while(true) {
 						try {
@@ -21,7 +18,7 @@ public class MessageServer
 							Socket socket = serverSocket.accept();
 
 							// start thread
-							new MessageServerThread(socket, mapper);
+							new MessageServerThread(socket);
 						} catch (Exception e) {
 							e.printStackTrace();
 						}
