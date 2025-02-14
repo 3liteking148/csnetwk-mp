@@ -80,145 +80,40 @@ public class FileSystemClientSession {
         }
     });
 
+    public FileSystemClientSession(BufferedReader consoleInput, Socket socket) throws IOException {
+        this.consoleInput = consoleInput;
+        this.socket = socket;
+        this.input = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
+        this.output = new DataOutputStream(socket.getOutputStream()));
+    
+        CommandInvoker invoker = new CommandInvoker();
+        invoker.registerCommand("/join", new JoinCommand());
+        invoker.registerCommand("/register", new RegisterCommand());
+        invoker.registerCommand("/store", new StoreCommand());
+        invoker.registerCommand("/leave", new LeaveCommand());
+        invoker.registerCommand("/dir", new DirCommand());
+        invoker.registerCommand("/get", new GetCommand());
+        invoker.registerCommand("/?", new HelpCommand());
+    
+        serverListener.start();
+    }
+    
     public void run() {
-        String commandInput = "";
-
-        do{
+        String commandInput;
+    
+        do {
             try {
                 commandInput = FileSystemClient.readLine();
-                String[] command = commandInput.split(" ");
-
-                // test connection
-                output.writeUTF("/connectivitytest");
-                output.flush();
-
-                // AFTER JOINING
-                switch(command[0]) {
-                    case "/?":
-                        if(command.length == 1){
-                            FileSystemClient.println("Description Input                          | Syntax Sample                 | Input Script\n" +
-                                    "\n" +
-                                    "Connect to the server application          | /join <server_ip_add> <port>  | /join 192.168.1.1 12345\n" +
-                                    "Disconnect to the server application       | /leave                        | /leave\n" +
-                                    "Register a unique handle or alias          | /register <handle>            | /register User1\n" +
-                                    "Send file to server /store <filename>      | /store <filename>             | /store Hello.txt\n" +
-                                    "Request directory file list from a server  | /dir                          | /dir\n" +
-                                    "Fetch a file from a server /get <filename> | /get <filename>               | /get Hello.txt\n" +
-                                    "Request command help to output all Input   | /?                            | /?\n");
-                        } else {
-                            FileSystemClient.errorMessage(FileSystemClient.ERROR_INVALID_PARAMS);
-                        }
-                        break;
-                    case "/join":
-                        FileSystemClient.errorMessage(FileSystemClient.ERROR_JOIN_ALREADY);
-                        break;
-                    case "/register":
-                        if(command.length == 2){
-                            if(!registered){
-                                output.writeUTF(commandInput);
-                                currentUsername = command[1];
-                            } else {
-                                FileSystemClient.errorMessage(FileSystemClient.ERROR_ALREADY_REGISTERED);
-                            }
-                        } else {
-                            FileSystemClient.errorMessage(FileSystemClient.ERROR_INVALID_PARAMS);
-                        }
-                        break;
-                    case "/leave":
-                        registered = false;
-                        break;
-                    case "/dir":
-                        if(registered){
-                            if(command.length == 1){
-                                output.writeUTF(commandInput);
-                            } else {
-                                FileSystemClient.errorMessage(FileSystemClient.ERROR_INVALID_PARAMS);
-                            }
-                        } else {
-                            FileSystemClient.errorMessage(FileSystemClient.ERROR_NOT_REGISTERED);
-                        }
-                        break;
-                    case "/get":
-                        if(registered){
-                            if(command.length == 2){
-                                currentFile = command[1];
-                                Path filePath = Paths.get("client_files", currentFile);
-                                if (Files.exists(filePath)) {
-                                    try {
-                                        // Delete the file
-                                        Files.delete(filePath);
-                                        FileSystemClient.println("File deleted successfully.");
-                                    } catch (IOException e) {
-                                        System.err.println("Failed to delete the file: " + e.getMessage());
-                                    }
-                                }
-                                output.writeUTF(commandInput);
-
-                            } else {
-                                FileSystemClient.errorMessage(FileSystemClient.ERROR_INVALID_PARAMS);
-                            }
-                        } else {
-                            FileSystemClient.errorMessage(FileSystemClient.ERROR_NOT_REGISTERED);
-                        }
-                        break;
-                    case "/store":
-
-                        if(registered){
-                            if(command.length == 2){
-                                String filename = command[1];
-                                Path filePath = Paths.get(FileSystemClient.CLIENT_FILES_DIRECTORY, filename);
-
-                                if (Files.exists(filePath)) {
-                                    try {
-                                        output.writeUTF(commandInput);
-
-                                        // Open a FileInputStream to read the file
-                                        FileInputStream fileInputStream = new FileInputStream(filePath.toFile());
-                                        BufferedInputStream bufferedFileInputStream = new BufferedInputStream(fileInputStream);
-                                        // Read and send the file content to the server
-                                        byte[] buffer = new byte[8192 + 1];
-                                        int bytesRead;
-
-                                        while ((bytesRead = bufferedFileInputStream.read(buffer)) > 0) {
-                                            sendBlob(buffer, bytesRead);
-                                        }
-
-                                        // indicate EOF
-                                        sendBlob(buffer, 0);
-
-                                        // Flush the output stream to ensure all data is sent
-                                        output.flush();
-                                        fileInputStream.close();
-                                        bufferedFileInputStream.close();
-                                        FileSystemClient.println("File uploaded successfully.");
-
-
-                                    } catch (IOException e) {
-                                        e.printStackTrace();
-                                    }
-                                } else {
-                                    FileSystemClient.errorMessage(FileSystemClient.ERROR_NO_FILE_CLIENT);
-                                }
-                            } else {
-                                FileSystemClient.errorMessage(FileSystemClient.ERROR_INVALID_PARAMS);
-                            }
-                        } else {
-                            FileSystemClient.errorMessage(FileSystemClient.ERROR_NOT_REGISTERED);
-                        }
-                        break;
-                    default:
-                        FileSystemClient.println("Error: Command not found.");
-                        break;
-                }
+                invoker.executeCommand(commandInput, this);
             } catch (IOException e) {
-                //FileSystemClient.errorMessage(FileSystemClient.ERROR_LOST_CONNECTION);
+                FileSystemClient.errorMessage(FileSystemClient.ERROR_LOST_CONNECTION);
                 break;
             }
-        } while(!commandInput.equals("/leave") && socket.isConnected());
-
-        // leave
+        } while (!commandInput.equals("/leave") && socket.isConnected());
+    
         destroy();
     }
+    
 
 
     public FileSystemClientSession(BufferedReader consoleInput, Socket socket) throws IOException {
