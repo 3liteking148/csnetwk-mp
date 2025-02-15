@@ -1,18 +1,11 @@
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
-import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.net.Socket;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.concurrent.atomic.AtomicReference;
@@ -24,17 +17,16 @@ public class FileSystemClientSession {
     private boolean registered = false;
     private DataInputStream input;
     private DataOutputStream output;
-
+    private CommandInvoker invoker;
     private String currentUsername = "";
-	private String currentFile = "";
+    private String currentFile = "";
 
     public void sendBlob(byte[] data, int length) throws IOException {
-		output.writeInt(length);
-
-		if(length > 0) {
-			output.write(data, 0, length);
-		}
-	}
+        output.writeInt(length);
+        if (length > 0) {
+            output.write(data, 0, length);
+        }
+    }
 
     private Thread serverListener = new Thread(() -> {
         try {
@@ -47,26 +39,17 @@ public class FileSystemClientSession {
                     Path filePath = Paths.get("client_files", currentFile);
 
                     int fragmentSize = input.readInt();
-                    if(fragmentSize > 0) {
-                        try (FileOutputStream fileOutputStream = new FileOutputStream(filePath.toFile(), true /* append every receive TODO: fix */);) {
-                            BufferedOutputStream bufferedFileOutputStream = new BufferedOutputStream(fileOutputStream);
+                    if (fragmentSize > 0) {
+                        try (FileOutputStream fileOutputStream = new FileOutputStream(filePath.toFile(), true);
+                             BufferedOutputStream bufferedFileOutputStream = new BufferedOutputStream(fileOutputStream)) {
                             byte[] buffer = new byte[8192 + 1];
-                            int bytesRead;
-
-
-                            bytesRead = input.read(buffer, 0, fragmentSize);
+                            int bytesRead = input.read(buffer, 0, fragmentSize);
                             bufferedFileOutputStream.write(buffer, 0, bytesRead);
-
-                            bufferedFileOutputStream.close();
-                            fileOutputStream.close();
-                        } catch (Exception e){
-                            System.out.print(e);
                         }
                     } else {
                         FileSystemClient.println("File received from Server: " + currentFile);
                         currentFile = "";
                     }
-
                 } else {
                     registered = true;
                     messageClient.set(new MessageClient(currentUsername, socket.getInetAddress().getHostName(), socket.getPort() + 1));
@@ -74,9 +57,7 @@ public class FileSystemClientSession {
                 }
             }
         } catch (IOException e) {
-            // die
             FileSystemClient.errorMessage(FileSystemClient.ERROR_LOST_CONNECTION);
-            return;
         }
     });
 
@@ -84,9 +65,10 @@ public class FileSystemClientSession {
         this.consoleInput = consoleInput;
         this.socket = socket;
         this.input = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
-        this.output = new DataOutputStream(socket.getOutputStream()));
-    
-        CommandInvoker invoker = new CommandInvoker();
+        this.output = new DataOutputStream(socket.getOutputStream());
+
+        this.invoker = new CommandInvoker();
+
         invoker.registerCommand("/join", new JoinCommand());
         invoker.registerCommand("/register", new RegisterCommand());
         invoker.registerCommand("/store", new StoreCommand());
@@ -94,13 +76,12 @@ public class FileSystemClientSession {
         invoker.registerCommand("/dir", new DirCommand());
         invoker.registerCommand("/get", new GetCommand());
         invoker.registerCommand("/?", new HelpCommand());
-    
+
         serverListener.start();
     }
-    
+
     public void run() {
         String commandInput;
-    
         do {
             try {
                 commandInput = FileSystemClient.readLine();
@@ -110,31 +91,41 @@ public class FileSystemClientSession {
                 break;
             }
         } while (!commandInput.equals("/leave") && socket.isConnected());
-    
+
         destroy();
     }
-    
 
+    public boolean isRegistered() {
+        return registered;
+    }
 
-    public FileSystemClientSession(BufferedReader consoleInput, Socket socket) throws IOException {
-        this.consoleInput = consoleInput;
-        this.socket = socket;
+    public void setRegistered(boolean registered) {
+        this.registered = registered;
+    }
 
-        input = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
-        output = new DataOutputStream(socket.getOutputStream());
+    public void setCurrentFile(String filename) {
+        this.currentFile = filename;
+    }
 
-        serverListener.start();
+    public DataOutputStream getOutputStream() {
+        return output;
+    }
+
+    public void setCurrentUsername(String username) {
+        this.currentUsername = username;
+    }
+
+    public String getCurrentUsername() {
+        return currentUsername;
     }
 
     public void destroy() {
-        if(messageClient.get() != null) {
+        if (messageClient.get() != null) {
             messageClient.get().destroy();
         }
-
-        // bye
         try {
             socket.close();
-        } catch(IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
